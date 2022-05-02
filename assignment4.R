@@ -15,7 +15,7 @@ df$ww2 <- if_else(df$ww2 < 194208, 1,0)
 # create plotting df 
 plottingDf <- df
 plottingDf$date <- lubridate::ym(plottingDf$yyyymm)
-plottingDf <- plottingDf[, 2:10]
+plottingDf <- plottingDf[, 2:11]
 
 # set colors for graph
 colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#C59900")
@@ -125,11 +125,14 @@ structFIRST <- define.model(kvar=10, ar=c(1:2), ma=c(1:2), rem.var=c(1,7:9), reg
 MFIRST <- marima(t(df), means=1, ar.pattern=structFIRST$ar.pattern,
              ma.pattern=structFIRST$ma.pattern, Check=FALSE, Plot="log.det", penalty=0)
 
-M2
+MFIRST
 
-slM2 <- step.slow.p(M2, data=t(df))
+slM2 <- step.slow.p(MFIRST, data=t(df))
 
-structSECOND <- define.model(kvar=10, ar=3, ma=3, rem.var=c(1,7:9), reg.var = 10, indep=NULL) # rem.var is to ignore the years
+
+slM2
+
+structSECOND <- define.model(kvar=10, ar=2, ma=2, rem.var=c(1,7:9), reg.var = 10, indep=NULL) # rem.var is to ignore the years
 MSECOND <- marima(t(df), means=1, ar.pattern=structSECOND$ar.pattern,
              ma.pattern=structSECOND$ma.pattern, Check=FALSE, Plot="log.det", penalty=0)
 
@@ -140,3 +143,40 @@ slMSECOND
 
 # say hi
 #hihi
+
+## Forecast
+predictiondf <- df[1:1077,] 
+actualdf <- df
+
+#add new rows 
+newData <- matrix(0, nrow = 4, ncol = 10)
+newData[,1] <- seq(201609,201612,1) #add dates we want to predict for
+newData[,2:10] <- 0 
+colnames(newData) <- colnames(predictiondf)
+#add prediction data to main df
+df2MatPredicts <- rbind(predictiondf, newData)
+#do forecast
+Forecasts <-  arma.forecast(t(df2MatPredicts), nstart=1076, nstep=4, marima=Model) # named smething different####
+
+#Extract predictions and upper and lower limits
+Year<-t(df2MatPredicts[103:112,1]);
+Predict<-Forecasts$forecasts[3,103:112]
+stdv<-sqrt(Forecasts$pred.var[3,3,2:11])
+upper.lim=Predict+stdv*1.96
+lower.lim=Predict-stdv*1.96
+Out<-rbind(Year,Predict,upper.lim,lower.lim)
+print(Out)
+
+# plot results:
+plot(df2MatPredicts[1:112,1], Forecasts$forecasts[3,],type="l", xlab="Year",
+     ylab="Change in Log Number of Words", main="Prediction of change in log number of words")
+lines(df2MatPredicts[1:102,1], df2MatPredicts[1:102,3], type="p")
+grid(lty=3, lwd=1, col="grey")
+Years<-seq(2021,2030,1)
+lines(Years, Predict, type="l", col=2)
+lines(Years, upper.lim, type="l", col=2)
+lines(Years, lower.lim, type="l", col=2)
+lines(c(2021,2020), c(0,2), col=4)
+
+
+
