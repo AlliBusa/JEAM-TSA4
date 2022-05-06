@@ -121,7 +121,7 @@ M1
 
 #####
 # Question 3 using slow step
-structFIRST <- define.model(kvar=10, ar=c(1:2), ma=c(1:2), rem.var=c(1,7:9), reg.var = 10, indep=NULL) # rem.var is to ignore the years
+structFIRST <- define.model(kvar=10, ar=c(1:3), ma=c(1:3), rem.var=c(1,7:9), reg.var = 10, indep=NULL) # rem.var is to ignore the years
 MFIRST <- marima(t(df), means=1, ar.pattern=structFIRST$ar.pattern,
              ma.pattern=structFIRST$ma.pattern, Check=FALSE, Plot="log.det", penalty=0)
 
@@ -141,8 +141,6 @@ MSECOND
 slMSECOND <- step.slow.p(MSECOND, data=t(df))
 slMSECOND
 
-# say hi
-#hihi
 
 ## Forecast
 predictiondf <- df[1:1077,] 
@@ -154,10 +152,28 @@ newData[,1] <- seq(201609,201612,1) #add dates we want to predict for
 newData[,2:10] <- 0 
 colnames(newData) <- colnames(predictiondf)
 #add prediction data to main df
-df2MatPredicts <- rbind(predictiondf, newData)
+MatPredicts <- rbind(predictiondf, newData)
 #do forecast
-Forecasts <-  arma.forecast(t(df2MatPredicts), nstart=1076, nstep=4, marima=Model) # named smething different####
+Forecasts <-  arma.forecast(t(MatPredicts), nstart=1077, nstep=4, marima=slM2) # named smething different####
 
+forecastdf <- data.frame(
+  t(Forecasts$forecasts)
+)
+forecastdf[,1] <- df[,1]
+colnames(forecastdf) <- colnames(predictiondf)
+forecastdf$date <- lubridate::ym(forecastdf$yyyymm)
+forecastdf <- forecastdf[, 2:11]
+
+
+presenting <- ggplot() + 
+  geom_line(data=forecastdf, aes(x=date, y=Other, color = colors[1])) + 
+  geom_line(data=plottingDf, aes(x=date, y=Other, color = colors[2]))
+ggplotly(presenting)
+
+OtherPlot <- ggplot() + geom_line(data=Forecasts$forecasts, aes(x=date, y=Other, color = colors[1]))
+ggplotly(OtherPlot)
+
+plot(Forecasts$forecasts)
 #Extract predictions and upper and lower limits
 Year<-t(df2MatPredicts[103:112,1]);
 Predict<-Forecasts$forecasts[3,103:112]
