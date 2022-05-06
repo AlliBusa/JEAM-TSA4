@@ -74,22 +74,21 @@ plottingDfReduced <- plottingDf[1031:1081,]
 plottingDfReduced <- forecastDf[1031:1081,]
 
 # set colors for graph
-colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#C59900")
+colors <- c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF", "#C59900","black","grey70")
 
 otherInterval <- intervalFunc(6, plottingDf)
 presenting <- ggplot() + 
-  geom_line(data=forecastdf[1070:1081,], aes(x=date, y=Other, color = 'forecast')) + 
-  geom_line(data=plottingDf[1070:1081,], aes(x=date, y=Other, color = 'data')) +
-  geom_vline(xintercept = plottingDf$date[1077], linetype = "dashed", color = 'n1') +
+  geom_line(data=forecastdf[1070:1081,], aes(x=date, y=Other, color = 'Forecast')) + 
+  geom_line(data=plottingDf[1070:1081,], aes(x=date, y=Other, color = 'Actual Data')) +
+  geom_vline( aes(xintercept = plottingDf$date[1077], color = 'Last Observation'),linetype = "dashed") +
   geom_ribbon(data = otherInterval, 
               aes(x = forecastdf[1071:1081,'date'],
-                  ymin = lower.lim, ymax = upper.lim), 
+                  ymin = lower.lim, ymax = upper.lim, color = '95% Prediction Interval'), 
               alpha = 0.1,
-              fill = "grey70",
-              color = "grey70")+
+              fill = "grey70")+
   theme_light()+
-  scale_color_manual(values = c(colors[1], colors[2], colors[3]),
-                      labels = c('Data', 'Forecast', 'n1') )+
+  scale_linetype_manual(values=c("solid","solid","dashed","solid"))+
+  scale_color_manual(values = c(colors[7], colors[1], colors[2], colors[6]))+
   labs(colour="")+
   theme(legend.position="bottom")
 presenting
