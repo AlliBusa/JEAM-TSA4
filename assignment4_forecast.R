@@ -25,8 +25,8 @@ MSECOND <- marima(t(df), means=1, ar.pattern=structSECOND$ar.pattern,
 MSECOND
 
 # step slow ("step.slow.p.marima_2017.R" function in the same working directory is necessary!)
-slMSECOND <- step.slow.p(MSECOND, data=t(df))
-slMSECOND
+ReducedMARIMAModel <- step.slow.p(MSECOND, data=t(df))
+ReducedMARIMAModel
 
 
 ##################### Forecast #############################
@@ -41,7 +41,7 @@ colnames(newData) <- colnames(predictiondf)
 #add prediction data to main df
 MatPredicts <- rbind(predictiondf, newData)
 #do forecasts
-Forecasts <-  arma.forecast(t(MatPredicts), nstart=1077, nstep=4, marima=slMSECOND) # named smething different####
+Forecasts <-  arma.forecast(t(MatPredicts), nstart=1077, nstep=4, marima=ReducedMARIMAModel) # named smething different####
 # move forecasted values to dataframe
 forecastdf <- data.frame(
   t(Forecasts$forecasts)
